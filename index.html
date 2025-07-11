@@ -355,6 +355,16 @@
         }
       }
 
+      function gradeFromCGPA(cgpa) {
+        if (cgpa === 5.0) return "A+";
+        if (cgpa >= 4.0) return "A";
+        if (cgpa >= 3.5) return "A−";
+        if (cgpa >= 3.0) return "B";
+        if (cgpa >= 2.0) return "C";
+        if (cgpa >= 1.0) return "D";
+        return "F";
+      }
+
       function calcFields(obj) {
         const keys = [
           "kuran_tajvid",
@@ -372,27 +382,35 @@
           "chemistry_ict",
           "ag_hmath",
         ];
-        let total = 0,
-          pass = true,
-          count = 0;
+
+        let total = 0;
+        let pass = true;
+        let pointsSum = 0;
+        let count = 0;
 
         keys.forEach((k) => {
           const val = evaluateExpression(obj[k]);
           obj[k] = Math.trunc(val); // truncate decimals
           total += val;
+          const gradeInfo = gradeFromMarks(val);
+          pointsSum += gradeInfo.point;
           if (val < 33) pass = false;
           count++;
         });
 
-        let cgpa = "",
-          grade = "F";
+        let cgpa = "0.00";
+        let grade = "F";
+
+        // if (pass) {
+        //   cgpa = (pointsSum / count).toFixed(2);
+        //   // Final grade based on CGPA
+        //   const gr = gradeFromMarks(pointsSum / count);
+        //   grade = gr.grade;
+        // }
+
         if (pass) {
-          const avg = total / count;
-          cgpa = (avg / 20).toFixed(2); // CGPA out of 5
-          const gr = gradeFromMarks(avg);
-          grade = gr.grade;
-        } else {
-          cgpa = "0.00";
+          cgpa = (pointsSum / count).toFixed(2);
+          grade = gradeFromCGPA(parseFloat(cgpa));
         }
 
         return {
@@ -432,6 +450,27 @@
       function renderTable(data) {
         const tb = document.getElementById("tblBody");
         const filter = document.getElementById("search").value.toLowerCase();
+
+        // Calculate summary stats
+        const appeared = data.length;
+        const passed = data.filter((r) => r.pass_fail === "Pass").length;
+        const percentage =
+          appeared > 0 ? ((passed / appeared) * 100).toFixed(2) : "0.00";
+
+        // Fix GPA 5 count
+        // const gpa5 = data.filter((r) => {
+        //   const cgpaVal =
+        //     typeof r.cgpa === "number" ? r.cgpa.toFixed(2) : r.cgpa;
+        //   return (cgpaVal === "5.00" || cgpaVal === "5") && r.grade === "A+";
+        // }).length;
+        const gpa5 = data.filter((r) => Number(r.cgpa) === 5 && r.grade === "A+").length;
+
+
+        // Update the summary section
+        document.getElementById("appeared").textContent = appeared;
+        document.getElementById("passed").textContent = passed;
+        document.getElementById("percentage").textContent = percentage + "%";
+        document.getElementById("gpa5").textContent = gpa5;
 
         // Filter and assign merit to passed students
         const passedStudents = data
@@ -490,7 +529,7 @@
         <td class="p-1">${Math.trunc(r.phedu_bio)}</td>
         <td class="p-1">${Math.trunc(r.chemistry_ict)}</td>
         <td class="p-1">${Math.trunc(r.ag_hmath)}</td>
-        <td class="p-1">${r.cgpa}</td> <!-- Keep .toFixed(2) format -->
+        <td class="p-1">${r.cgpa}</td>
         <td class="p-1">${r.grade}</td>
         <td class="p-1 ${meritClass}">${merit}</td>
         <td class="p-1">
