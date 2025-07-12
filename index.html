@@ -278,6 +278,7 @@
         id="summaryStats"
         class="mb-4 bg-white p-4 rounded shadow text-sm sm:text-base"
       >
+        <p><strong>No. of Students:</strong> <span id="totalStudents">0</span></p>
         <p><strong>Appeared:</strong> <span id="appeared">0</span></p>
         <p><strong>Passed:</strong> <span id="passed">0</span></p>
         <p>
@@ -467,6 +468,7 @@
 
 
         // Update the summary section
+        document.getElementById("totalStudents").textContent = allData.length;
         document.getElementById("appeared").textContent = appeared;
         document.getElementById("passed").textContent = passed;
         document.getElementById("percentage").textContent = percentage + "%";
