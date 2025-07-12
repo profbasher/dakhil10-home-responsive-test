@@ -278,7 +278,9 @@
         id="summaryStats"
         class="mb-4 bg-white p-4 rounded shadow text-sm sm:text-base"
       >
-        <p><strong>No. of Students:</strong> <span id="totalStudents">0</span></p>
+        <p>
+          <strong>No. of Students:</strong> <span id="totalStudents">0</span>
+        </p>
         <p><strong>Appeared:</strong> <span id="appeared">0</span></p>
         <p><strong>Passed:</strong> <span id="passed">0</span></p>
         <p>
@@ -422,6 +424,57 @@
         };
       }
 
+      function calculateSummaryStats(data) {
+        let totalStudents = data.length;
+        let appeared = 0;
+        let passed = 0;
+        let gpa5 = 0;
+
+        data.forEach((student) => {
+          const subjects = [
+            "kuran_tajvid",
+            "akaid_fikah",
+            "hadis",
+            "arabic1",
+            "arabic2",
+            "gmath",
+            "english1",
+            "english2",
+            "bengali1",
+            "bengali2",
+            "ishistory_physics",
+            "phedu_bio",
+            "chemistry_ict",
+            "ag_hmath",
+          ];
+
+          // Count as appeared if any subject > 0
+          const hasAppeared = subjects.some((s) => parseFloat(student[s]) > 0);
+          if (hasAppeared) {
+            appeared++;
+
+            // Check pass status: all subjects must be >= 33
+            const allPassed = subjects.every(
+              (s) => parseFloat(student[s]) >= 33
+            );
+            if (allPassed) passed++;
+
+            // GPA 5 check
+            if (parseFloat(student.cgpa) === 5.0) gpa5++;
+          }
+        });
+
+        const percentage =
+          appeared > 0 ? ((passed / appeared) * 100).toFixed(2) + "%" : "0%";
+
+        // Update DOM
+        document.getElementById("totalStudents").textContent = totalStudents;
+        document.getElementById("appeared").textContent = appeared;
+        document.getElementById("passed").textContent = passed;
+        document.getElementById("percentage").textContent = percentage;
+        document.getElementById("gpa5").textContent = gpa5;
+      }
+
       document
         .getElementById("entryForm")
         .addEventListener("submit", async (e) => {
@@ -464,8 +517,9 @@
         //     typeof r.cgpa === "number" ? r.cgpa.toFixed(2) : r.cgpa;
         //   return (cgpaVal === "5.00" || cgpaVal === "5") && r.grade === "A+";
         // }).length;
-        const gpa5 = data.filter((r) => Number(r.cgpa) === 5 && r.grade === "A+").length;
-
+        const gpa5 = data.filter(
+          (r) => Number(r.cgpa) === 5 && r.grade === "A+"
+        ).length;
 
         // Update the summary section
         document.getElementById("totalStudents").textContent = allData.length;
@@ -542,6 +596,8 @@
 
             tb.appendChild(tr);
           });
+
+        calculateSummaryStats(data);
       }
 
       document
